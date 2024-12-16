@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sensor Data Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      padding: 20px;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-areas: 
+        "gps temperature battery"
+        "lidar camera accelerometer";
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 20px;
+    }
+    
+    .card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      text-align: center;
+      transition: 0.3s;
+      position: relative;
+    }
+    
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .card p {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .center-card {
+      grid-area: camera;
+      border: 3px solid #007BFF;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
+    
+    #gps-card { grid-area: gps; }
+    #temperature-card { grid-area: temperature; }
+    #battery-card { grid-area: battery; }
+    #camera-card { grid-area: camera; }
+    #lidar-card { grid-area: lidar; }
+    #accelerometer-card { grid-area: accelerometer; }
+    
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-areas: 
+          "gps gps"
+          "temperature temperature"
+          "camera camera"
+          "battery battery"
+          "lidar lidar"
+          "accelerometer accelerometer";
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <h1>Sensor Data Dashboard</h1>
+
+  <div class="grid">
+    <div class="card" id="gps-card">
+      <div class="card-icon">📍</div>
+      <h2>GPS Data</h2>
+      <p id="gps-data">Loading...</p>
+    </div>
+
+    <div class="card" id="temperature-card">
+      <div class="card-icon">🌡️</div>
+      <h2>Temperature</h2>
+      <p id="temperature-data">Loading...</p>
+    </div>
+
+    <div class="card" id="battery-card">
+      <div class="card-icon">🔋</div>
+      <h2>Battery</h2>
+      <p id="battery-data">Loading...</p>
+    </div>
+
+    <div class="card center-card" id="camera-card">
+      <div class="card-icon">📷</div>
+      <h2>Camera</h2>
+      <p id="camera-data">Loading...</p>
+    </div>
+
+    <div class="card" id="lidar-card">
+      <div class="card-icon">📡</div>
+      <h2>LiDAR</h2>
+      <p id="lidar-data">Loading...</p>
+    </div>
+
+    <div class="card" id="accelerometer-card">
+      <div class="card-icon">📈</div>
+      <h2>Accelerometer</h2>
+      <p id="accelerometer-data">Loading...</p>
+    </div>
+  </div>
+
+  <p class="error" id="error-message"></p>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    async function fetchData(endpoint, elementId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/${endpoint}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${endpoint} data`);
+        }
+        const data = await response.json();
+        document.getElementById(elementId).innerHTML = formatData(data);
+      } catch (error) {
+        document.getElementById('error-message').textContent = error.message;
+      }
+    }
+
+    function formatData(data) {
+      if (typeof data === 'object') {
+        return Object.entries(data).map(([key, value]) => `<strong>${capitalize(key)}:</strong> ${value}`).join('<br>');
+      } else {
+        return data;
+      }
+    }
+
+    function capitalize(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    function fetchAllData() {
+      fetchData('gps', 'gps-data');
+      fetchData('temperature', 'temperature-data');
+      fetchData('battery', 'battery-data');
+      fetchData('camera', 'camera-data');
+      fetchData('lidar', 'lidar-data');
+      fetchData('accelerometer', 'accelerometer-data');
+    }
+
+    fetchAllData();
+    setInterval(fetchAllData, 5000);
+  </script>
+
+</body>
+</html>
